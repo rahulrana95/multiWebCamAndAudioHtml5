@@ -16,23 +16,58 @@
 <body>
   <div>
       <div>
-        <video id="video" width="640" height="480" autoplay>
-        streaming</video>
+        <div id="webcams">
+          <center>Available WebCams</center>
+          <div>
+        <video id="video" width="640" height="480" autoplay></video>
         <button id="snap">Snap Photo</button>
-        <canvas id="canvas" width="640" height="480"></canvas>
+        <canvas id="canvas" width="640" height="auto"></canvas>
       </div>
   </div>
   <script>
+
+  function appendChild(label,id) {
+    var node = document.createElement("li");
+    var textnode = document.createTextNode(label);
+    node.appendChild(textnode);
+    node.setAttribute("id", label);
+    node.addEventListener('click',function(event){
+      console.log(node.id);
+      navigator.mediaDevices.getUserMedia({ video: {
+        optional: [
+                  {sourceId: id}
+              ]
+      }, audio:true }).then(function(stream) {
+
+          video.src = window.URL.createObjectURL(stream);
+          video.play();
+      });
+    });
+    document.getElementById("webcams").appendChild(node);
+}
+
+
   var video = document.getElementById('video');
 
 // Get access to the camera!
-if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    // Not adding `{ audio: true }` since we only want video now
-    navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+if(navigator.mediaDevices && (navigator.mediaDevices.getUserMedia)) {
+  navigator.mediaDevices.enumerateDevices()
+    .then(function(MediaDeviceInfo) {
+        for(var i=0;i < MediaDeviceInfo.length ; i++) {
+          if(MediaDeviceInfo[i].kind == "videoinput"){
+            console.log(MediaDeviceInfo[i]);
+            appendChild(MediaDeviceInfo[i].label,MediaDeviceInfo[i].deviceId)
+          }
+        }
+    })
 
-        video.src = window.URL.createObjectURL(stream);
-        video.play();
-    });
+  /*
+  navigator.media.webkitGetUserMedia ||
+  navigator.media.mozGetUserMedia ||
+  navigator.media.msGetUserMedia
+  */
+    // Not adding `{ audio: true }` since we only want video now
+
 }
 
 var canvas = document.getElementById('canvas');
